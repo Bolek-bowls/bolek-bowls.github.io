@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>QR-коды | bólek coffee station</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .qr-field { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; max-width: 560px; }
+    .qr-field label { font-size: 12px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    .qr-field input { font: inherit; padding: 14px 16px; border: 1px solid var(--ink); border-radius: 12px; background: var(--paper); }
+    .qr-grid { display: grid; gap: 16px; margin-top: 28px; }
+    .qr-card { border: 1px solid var(--rule); border-radius: var(--radius); padding: 20px; display: grid; gap: 14px; justify-items: start; }
+    .qr-card svg { width: 100%; max-width: 240px; height: auto; background: #fff; border-radius: 8px; }
+    .qr-card h3 { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+    .qr-card code { font-size: 13px; color: var(--muted); word-break: break-all; }
+    .qr-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+    @media (min-width: 700px) { .qr-grid { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="top"><div class="wrap">
+    <a class="logo" href="index.html"><img src="img/logo-orange.svg" alt="bólek coffee station"></a>
+    <a class="back" href="index.html">Здоровое меню</a>
+  </div></header>
+  <main class="wrap" style="padding-top:36px">
+    <p class="eyebrow">Служебная страница</p>
+    <h1 style="font-size:clamp(32px,6vw,52px);font-weight:700;letter-spacing:-.035em;margin-top:12px">QR-коды для боулов</h1>
+    <p class="portion">Впишите постоянный адрес сайта. Коды обновятся сами. Печатать их стоит только после того, как адрес окончательный.</p>
+    <div class="qr-field">
+      <label for="base">Адрес сайта</label>
+      <input id="base" type="url" value="https://your-site.netlify.app/" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="qr-grid" id="grid"></div>
+  </main>
+  <script src="data/bowls.js"></script>
+  <script src="js/qrcode.js"></script>
+  <script>
+    (function () {
+      var grid = document.getElementById("grid"), base = document.getElementById("base");
+
+      function svgFor(url) {
+        var q = BolekQR.encode(url), pad = 4, n = q.size + pad * 2, d = "";
+        for (var y = 0; y < q.size; y++) for (var x = 0; x < q.size; x++)
+          if (q.get(x, y)) d += "M" + (x + pad) + " " + (y + pad) + "h1v1h-1z";
+        return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + n + ' ' + n + '" shape-rendering="crispEdges">' +
+               '<rect width="' + n + '" height="' + n + '" fill="#fff"/><path d="' + d + '" fill="#1D1D1F"/></svg>';
+      }
+      function download(name, blob) {
+        var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+      }
+      function png(svg, name) {
+        var img = new Image();
+        img.onload = function () {
+          var c = document.createElement("canvas"); c.width = c.height = 1200;
+          var ctx = c.getContext("2d"); ctx.imageSmoothingEnabled = false; ctx.drawImage(img, 0, 0, 1200, 1200);
+          c.toBlob(function (b) { download(name, b); });
+        };
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+      }
+
+      function draw() {
+        var root = base.value.trim(); if (root && root.slice(-1) !== "/") root += "/";
+        grid.innerHTML = "";
+        window.BOLEK_BOWLS.forEach(function (b) {
+          var url = root + b.slug + ".html", svg;
+          try { svg = svgFor(url); } catch (e) { grid.textContent = e.message; return; }
+          var card = document.createElement("div"); card.className = "qr-card";
+          card.innerHTML = "<h3></h3>" + svg + "<code></code><div class='qr-btns'><button class='btn' data-t='svg'>Скачать SVG</button><button class='btn' data-t='png'>Скачать PNG</button></div>";
+          card.querySelector("h3").textContent = b.name;
+          card.querySelector("code").textContent = url;
+          card.querySelector("[data-t=svg]").onclick = function () { download("qr-" + b.slug + ".svg", new Blob([svg], { type: "image/svg+xml" })); };
+          card.querySelector("[data-t=png]").onclick = function () { png(svg, "qr-" + b.slug + ".png"); };
+          grid.appendChild(card);
+        });
+      }
+      base.addEventListener("input", draw); draw();
+    })();
+  </script>
+</body>
+</html>
