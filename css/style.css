@@ -207,3 +207,18 @@ noscript p { padding: 24px var(--gutter); text-align: center; }
 }
 
 .col-main { max-width: 560px; }
+
+.seg button { padding: 11px 18px; }
+@media (max-width: 380px) {
+  :root { --gutter: 16px; }
+  th, td { font-size: 13px; }
+  td:not(:first-child), th:not(:first-child) { width: 14.5%; min-width: 0; }
+  td:first-child { padding-right: 6px; }
+  th { font-size: 10px; letter-spacing: 0.03em; }
+}
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; }
+.ctl { display: flex; flex-direction: column; gap: 6px; }
+tr.off td { opacity: .35; }
+tr.off td:first-child { text-decoration: line-through; }
+tr.off .tag { text-decoration: none; }
