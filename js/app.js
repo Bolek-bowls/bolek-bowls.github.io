@@ -24,9 +24,11 @@
   function esc(s) { return String(s).replace(/[&<>"']/g, function (ch) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]; }); }
 
-  function totals(b) {
+  // withSauce === false: не считаем ингредиент с separate: true (ореховый соус)
+  function totals(b, withSauce) {
     var t = { g: 0, kcal: 0, p: 0, f: 0, c: 0 };
     b.ingredients.forEach(function (i) {
+      if (i.separate && withSauce === false) return;
       t.g += i.g; t.kcal += i.kcal; t.p += i.p; t.f += i.f; t.c += i.c;
     });
     Object.keys(t).forEach(function (k) { t[k] = round(t[k], 2); }); // убираем хвосты вида 18.250000000004
@@ -98,13 +100,11 @@
 
   /* ---------- Страница боула ---------- */
   function renderBowl(b) {
-    var t = totals(b);
-    var sh = shares(t);
     var sep = b.ingredients.filter(function (i) { return i.separate; })[0];
     var other = BOWLS.filter(function (x) { return x.slug !== b.slug; });
 
     var rows = b.ingredients.map(function (i) {
-      return '<tr><td>' + esc(i.name) + (i.separate ? '<span class="tag">отдельно</span>' : '') +
+      return '<tr' + (i.separate ? ' id="sep-row"' : '') + '><td>' + esc(i.name) + (i.separate ? '<span class="tag">отдельно</span>' : '') +
         '<span class="grams">' + fmtRow(i.g) + ' г</span></td>' +
         '<td>' + fmtRow(i.kcal) + '</td><td>' + fmtRow(i.p) + '</td><td>' + fmtRow(i.f) + '</td><td>' + fmtRow(i.c) + '</td></tr>';
     }).join("");
@@ -114,15 +114,22 @@
         '<section class="intro">' +
           '<p class="eyebrow"><span>Здоровое меню</span><span>Боул</span></p>' +
           '<h1>' + esc(b.name) + '</h1>' +
-          '<p class="portion">Порция <b>' + fmt(t.g, 0) + ' г</b>' +
-            (sep ? '. ' + esc(sep.name) + ' подаётся отдельно, он уже входит в значения ниже' : '') + '</p>' +
+          '<p class="portion" id="portion"></p>' +
         '</section>' +
 
         '<div class="layout">' +
           '<div class="col-main">' +
-            '<div class="seg" role="group" aria-label="Показать значения">' +
-              '<button type="button" data-mode="portion" aria-pressed="true">На порцию</button>' +
-              '<button type="button" data-mode="100" aria-pressed="false">На 100 г</button>' +
+            '<div class="controls">' +
+              '<div class="seg" id="seg-mode" role="group" aria-label="Показать значения">' +
+                '<button type="button" data-mode="portion" aria-pressed="true">На порцию</button>' +
+                '<button type="button" data-mode="100" aria-pressed="false">На 100 г</button>' +
+              '</div>' +
+              (sep ?
+              '<div class="ctl"><span class="eyebrow">' + esc(sep.name) + '</span>' +
+                '<div class="seg" id="seg-sauce" role="group" aria-label="' + esc(sep.name) + '">' +
+                  '<button type="button" data-sauce="1" aria-pressed="true">С соусом</button>' +
+                  '<button type="button" data-sauce="0" aria-pressed="false">Без соуса</button>' +
+                '</div></div>' : '') +
             '</div>' +
             '<div class="facts" aria-live="polite">' +
               '<div class="fact fact--kcal"><span class="label">Калории</span><span class="value"><span data-v="kcal"></span><small>ккал</small></span></div>' +
@@ -131,9 +138,8 @@
               '<div class="fact fact--c"><span class="label">Углеводы</span><span class="value"><span data-v="c"></span><small>г</small></span></div>' +
             '</div>' +
             '<div class="split"><p class="eyebrow">Откуда калории</p>' +
-              '<div class="bar" role="img" aria-label="Белки ' + sh[0] + '%, жиры ' + sh[1] + '%, углеводы ' + sh[2] + '%">' +
-                '<i class="s-p" style="width:' + sh[0] + '%"></i><i class="s-f" style="width:' + sh[1] + '%"></i><i class="s-c" style="width:' + sh[2] + '%"></i></div>' +
-              '<div class="legend"><span><i class="s-p"></i>Белки ' + sh[0] + '%</span><span><i class="s-f"></i>Жиры ' + sh[1] + '%</span><span><i class="s-c"></i>Углеводы ' + sh[2] + '%</span></div>' +
+              '<div class="bar" id="bar" role="img"><i class="s-p"></i><i class="s-f"></i><i class="s-c"></i></div>' +
+              '<div class="legend" id="legend"></div>' +
             '</div>' +
             '<div class="actions"><button type="button" class="btn" id="copy">' + ICON.copy + 'Скопировать КБЖУ</button></div>' +
           '</div>' +
@@ -144,36 +150,60 @@
           '<div class="section-head"><h2>Состав</h2><span class="eyebrow">на одну порцию</span></div>' +
           '<table><thead><tr><th>Ингредиент</th><th>Ккал</th><th>Б</th><th>Ж</th><th>У</th></tr></thead>' +
           '<tbody>' + rows + '</tbody>' +
-          '<tfoot><tr><td>Итого<span class="grams">' + fmt(t.g, 0) + ' г</span></td>' +
-            '<td>' + fmt(t.kcal, 0) + '</td><td>' + fmt(t.p, 1) + '</td><td>' + fmt(t.f, 1) + '</td><td>' + fmt(t.c, 1) + '</td></tr></tfoot></table>' +
+          '<tfoot><tr id="total-row"></tr></tfoot></table>' +
         '</section>' +
       '</div>';
 
-    /* значения в плитках */
     var mode = "portion";
+    var sauce = true;                      // ореховый соус включён по умолчанию (так считает кафе)
+    var t;
+
     function paint() {
+      t = totals(b, sauce);
       var v = view(t, mode);
       app.querySelector('[data-v="kcal"]').textContent = fmt(v.kcal, 0);
       app.querySelector('[data-v="p"]').textContent = fmt(v.p, 1);
       app.querySelector('[data-v="f"]').textContent = fmt(v.f, 1);
       app.querySelector('[data-v="c"]').textContent = fmt(v.c, 1);
+
+      var sh = shares(t);
+      var bar = document.getElementById("bar");
+      bar.setAttribute("aria-label", "Белки " + sh[0] + "%, жиры " + sh[1] + "%, углеводы " + sh[2] + "%");
+      var seg = bar.children;
+      seg[0].style.width = sh[0] + "%"; seg[1].style.width = sh[1] + "%"; seg[2].style.width = sh[2] + "%";
+      document.getElementById("legend").innerHTML =
+        '<span><i class="s-p"></i>Белки ' + sh[0] + '%</span><span><i class="s-f"></i>Жиры ' + sh[1] + '%</span><span><i class="s-c"></i>Углеводы ' + sh[2] + '%</span>';
+
+      document.getElementById("portion").innerHTML = 'Порция <b>' + fmt(t.g, 0) + ' г</b>' +
+        (sep ? (sauce ? '. ' + esc(sep.name) + ' подаётся отдельно, он уже входит в значения ниже'
+                      : '. Значения указаны без соуса') : '');
+
+      var sepRow = document.getElementById("sep-row");
+      if (sepRow) sepRow.classList.toggle("off", !sauce);
+      document.getElementById("total-row").innerHTML = '<td>Итого<span class="grams">' + fmt(t.g, 0) + ' г</span></td>' +
+        '<td>' + fmt(t.kcal, 0) + '</td><td>' + fmt(t.p, 1) + '</td><td>' + fmt(t.f, 1) + '</td><td>' + fmt(t.c, 1) + '</td>';
     }
     paint();
 
-    app.querySelectorAll(".seg button").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        mode = btn.getAttribute("data-mode");
-        app.querySelectorAll(".seg button").forEach(function (x) {
-          x.setAttribute("aria-pressed", x === btn ? "true" : "false");
+    function bindSeg(id, attr, onPick) {
+      var box = document.getElementById(id);
+      if (!box) return;
+      box.querySelectorAll("button").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          box.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
+          onPick(btn.getAttribute(attr));
+          paint();
         });
-        paint();
       });
-    });
+    }
+    bindSeg("seg-mode", "data-mode", function (val) { mode = val; });
+    bindSeg("seg-sauce", "data-sauce", function (val) { sauce = val === "1"; });
 
     /* копирование */
     document.getElementById("copy").addEventListener("click", function () {
       var v = view(t, mode);
-      var text = b.name + (mode === "100" ? " (на 100 г)" : " (порция " + fmt(t.g, 0) + " г)") + "\n" +
+      var text = b.name + " (" + (mode === "100" ? "на 100 г" : "порция " + fmt(t.g, 0) + " г") + ")\n" +
+        (sep ? sep.name + ": " + (sauce ? "включён" : "без него") + "\n" : "") +
         "Калории: " + fmt(v.kcal, 0) + " ккал\n" +
         "Белки: " + fmt(v.p, 1) + " г\n" +
         "Жиры: " + fmt(v.f, 1) + " г\n" +
