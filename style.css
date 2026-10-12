@@ -1,0 +1,224 @@
+/* ---------- Шрифт ----------
+   Фирменный шрифт Bólek — PP Pangram Sans (платный). Пока лицензии нет, стоит Inter (свободный).
+   Когда появятся файлы PP Pangram Sans, положите их в fonts/ и поменяйте четыре строки src ниже.
+   Больше нигде ничего менять не нужно: на сайте один шрифт. */
+@font-face { font-family: "Bolek Sans"; font-weight: 300; font-display: swap; src: url("../fonts/inter-Light.woff") format("woff"); }
+@font-face { font-family: "Bolek Sans"; font-weight: 400; font-display: swap; src: url("../fonts/inter-Regular.woff") format("woff"); }
+@font-face { font-family: "Bolek Sans"; font-weight: 500; font-display: swap; src: url("../fonts/inter-Medium.woff") format("woff"); }
+@font-face { font-family: "Bolek Sans"; font-weight: 700; font-display: swap; src: url("../fonts/inter-Bold.woff") format("woff"); }
+
+/* ---------- Цвета бренда ---------- */
+:root {
+  --orange: #FF3802;
+  --ink: #1D1D1F;
+  --paper: #FCFBF8;
+  --sand: #EDE9E4;
+  --sky: #D7F0F0;
+  --sky-deep: #A9DADA;
+  --beige: #E8D9BD;
+  --muted: #6B6B6E;
+  --rule: rgba(29, 29, 31, 0.16);
+  --radius: 20px;
+  --gutter: 20px;
+  --maxw: 1120px;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Bolek Sans", system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+h1, h2, h3, p { margin: 0; }
+
+.wrap { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 var(--gutter); }
+
+.eyebrow {
+  font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Шапка ---------- */
+.top { border-bottom: 1px solid var(--rule); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+.logo img { height: 40px; width: auto; }
+.back {
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  font-size: 14px; font-weight: 500; padding: 10px 0;
+}
+.back svg { width: 18px; height: 18px; transition: transform .2s; }
+.back:hover svg { transform: translateX(-3px); }
+
+/* ---------- Страница боула ---------- */
+.intro { padding: 36px 0 8px; }
+.intro .eyebrow { display: flex; gap: 14px; }
+.intro h1 {
+  margin-top: 14px;
+  font-size: clamp(36px, 8vw, 68px); line-height: 1.02; font-weight: 700; letter-spacing: -0.035em;
+}
+.portion { margin-top: 14px; color: var(--muted); }
+.portion b { color: var(--ink); font-weight: 500; }
+
+[hidden] { display: none !important; }
+.layout { display: grid; gap: 28px; padding: 24px 0 8px; }
+
+.seg {
+  display: inline-flex; padding: 4px; gap: 4px; background: var(--sand); border-radius: 999px;
+}
+.seg button {
+  border: 0; background: transparent; cursor: pointer; padding: 9px 18px; border-radius: 999px;
+  font-size: 14px; font-weight: 500; color: var(--muted); transition: background .2s, color .2s;
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.seg button:focus-visible, .btn:focus-visible, .card:focus-visible, .back:focus-visible, .logo:focus-visible {
+  outline: 2px solid var(--orange); outline-offset: 3px;
+}
+
+.facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.fact { border-radius: 16px; padding: 16px 16px 14px; min-height: 112px; display: flex; flex-direction: column; justify-content: space-between; }
+.fact .label { font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; opacity: .75; }
+.fact .value { font-size: clamp(34px, 9vw, 48px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+.fact .value small { font-size: 15px; font-weight: 500; letter-spacing: 0; margin-left: 4px; opacity: .75; }
+.fact--kcal { background: var(--orange); color: #fff; }
+.fact--p { background: var(--sky); }
+.fact--f { background: var(--beige); }
+.fact--c { background: var(--sand); }
+
+.split { margin-top: 22px; }
+.split .eyebrow { margin-bottom: 10px; }
+.bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.bar i { display: block; height: 100%; }
+.bar .s-p { background: var(--ink); }
+.bar .s-f { background: var(--orange); }
+.bar .s-c { background: var(--sky-deep); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-size: 14px; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.legend .s-p { background: var(--ink); }
+.legend .s-f { background: var(--orange); }
+.legend .s-c { background: var(--sky-deep); }
+
+.actions { margin-top: 24px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
+  border: 1px solid var(--ink); background: transparent; border-radius: 999px; padding: 13px 22px;
+  font-size: 15px; font-weight: 500; transition: background .2s, color .2s;
+}
+.btn svg { width: 18px; height: 18px; }
+.btn:hover { background: var(--ink); color: var(--paper); }
+
+.photo { margin: 0; border-radius: var(--radius); overflow: hidden; background: var(--sky); aspect-ratio: 4 / 3; position: relative; }
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---------- Состав ---------- */
+.section { padding: 44px 0 0; }
+.section-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; border-top: 1px solid var(--ink); padding-top: 14px; }
+.section-head h2 { font-size: clamp(26px, 5vw, 36px); font-weight: 700; letter-spacing: -0.03em; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 8px; font-variant-numeric: tabular-nums; }
+th, td { padding: 12px 0; text-align: right; border-bottom: 1px solid var(--rule); font-size: 14px; vertical-align: top; }
+th { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding-bottom: 8px; }
+th:first-child, td:first-child { text-align: left; padding-right: 10px; }
+td:not(:first-child), th:not(:first-child) { width: 13%; min-width: 38px; }
+td .grams { display: block; color: var(--muted); font-size: 13px; }
+.tag {
+  display: inline-block; margin-left: 6px; padding: 1px 8px; border: 1px solid var(--orange); color: var(--orange);
+  border-radius: 999px; font-size: 11px; font-weight: 500; letter-spacing: 0.02em; vertical-align: 2px; white-space: nowrap;
+}
+tfoot td { border-bottom: 0; font-weight: 700; font-size: 15px; padding-top: 16px; }
+tfoot td:first-child { font-weight: 700; }
+tfoot .grams { font-weight: 400; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.chip { background: var(--sand); border-radius: 999px; padding: 7px 16px; font-size: 14px; font-weight: 500; }
+.note { margin-top: 12px; color: var(--muted); font-size: 14px; max-width: 56ch; }
+
+/* ---------- Карточки блюд (главная и «другой боул») ---------- */
+.cards { display: grid; gap: 16px; margin-top: 20px; }
+.card {
+  display: grid; grid-template-columns: 112px 1fr auto; gap: 16px; align-items: center;
+  text-decoration: none; border: 1px solid var(--rule); border-radius: var(--radius); padding: 12px; background: var(--paper);
+  transition: border-color .2s, transform .2s;
+}
+.card:hover { border-color: var(--ink); }
+.card:not(.has-photo) { grid-template-columns: 1fr auto; }
+.card .thumb { aspect-ratio: 1; border-radius: 12px; background: var(--sky); overflow: hidden; position: relative; }
+.card .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.card h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+.card .meta { margin-top: 6px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.card .go { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--rule); display: grid; place-items: center; margin-right: 6px; transition: background .2s, color .2s, border-color .2s; }
+.card .go svg { width: 18px; height: 18px; }
+.card:hover .go { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+/* ---------- Главная ---------- */
+.hero-home { background: var(--orange); color: var(--paper); }
+.hero-home .wrap { padding-top: 22px; padding-bottom: 28px; min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; }
+.hero-home .logo img { height: 40px; }
+.hero-home h1 { font-size: clamp(52px, 15vw, 128px); line-height: 0.92; font-weight: 700; letter-spacing: -0.045em; margin-top: 56px; }
+.hero-home p { margin-top: 20px; max-width: 44ch; font-size: 18px; line-height: 1.4; font-weight: 300; }
+.home-body { padding-top: 36px; }
+
+/* ---------- Подвал ---------- */
+.foot { margin-top: 64px; border-top: 1px solid var(--rule); }
+.foot .wrap { padding-top: 22px; padding-bottom: 36px; display: grid; gap: 10px; color: var(--muted); font-size: 13px; }
+.foot strong { color: var(--ink); font-weight: 500; }
+
+/* ---------- Уведомление «Скопировано» ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: var(--ink); color: var(--paper); padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 500;
+  transition: opacity .25s, transform .25s; z-index: 10;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+noscript p { padding: 24px var(--gutter); text-align: center; }
+
+/* ---------- Широкие экраны ---------- */
+@media (min-width: 900px) {
+  :root { --gutter: 40px; }
+  .top .wrap { height: 88px; }
+  .logo img { height: 48px; }
+  .intro { padding-top: 56px; }
+  .layout.has-photo { grid-template-columns: 1.05fr 0.95fr; gap: 64px; padding-top: 36px; align-items: start; }
+  .photo { aspect-ratio: 4 / 5; position: sticky; top: 24px; }
+  .fact { min-height: 132px; padding: 20px 20px 16px; }
+  th, td { font-size: 15px; padding: 14px 0; }
+  .cards { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .card { grid-template-columns: 1fr; padding: 14px; gap: 18px; }
+  .card .thumb { aspect-ratio: 4 / 3; }
+  .card .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 6px 6px; }
+  .card .go { margin: 0; }
+  .hero-home .wrap { min-height: 460px; padding-top: 32px; }
+}
+@media (max-width: 899px) {
+  .card .row { display: contents; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+
+.col-main { max-width: 560px; }
+
+.seg button { padding: 11px 18px; }
+@media (max-width: 380px) {
+  :root { --gutter: 16px; }
+  th, td { font-size: 13px; }
+  td:not(:first-child), th:not(:first-child) { width: 14.5%; min-width: 0; }
+  td:first-child { padding-right: 6px; }
+  th { font-size: 10px; letter-spacing: 0.03em; }
+}
+
+.controls { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; }
+.ctl { display: flex; flex-direction: column; gap: 6px; }
+tr.off td { opacity: .35; }
+tr.off td:first-child { text-decoration: line-through; }
+tr.off .tag { text-decoration: none; }
