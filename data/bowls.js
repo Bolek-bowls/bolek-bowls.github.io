@@ -9,15 +9,18 @@
     p, f, c — белки, жиры, углеводы (г)
     separate: true — ингредиент подаётся отдельно (например, соус в стаканчике)
 
+  kind  — тип блюда на странице ("Боул", "Сэндвич"), group — заголовок группы на главной.
+
   Фото: положите файл в папку img/ и впишите путь в поле photo (например "img/shrimp.jpg").
   Пока файла нет, на странице показывается заглушка.
 */
 window.BOLEK_BOWLS = [
   {
     slug: "shrimp",
+    kind: "Боул",
+    group: "Боулы",
     name: "Боул с креветками",
     photo: "img/shrimp.jpg",
-    allergens: ["Ракообразные", "Соя", "Орехи", "Горчица"],
     ingredients: [
       { name: "Рис готовый",              g: 180, kcal: 224,   p: 4.8,  f: 0.5,  c: 50 },
       { name: "Креветки тигровые (4 шт.)", g: 40,  kcal: 45,    p: 9.1,  f: 0.7,  c: 0.6 },
@@ -34,9 +37,10 @@ window.BOLEK_BOWLS = [
   },
   {
     slug: "chicken",
+    kind: "Боул",
+    group: "Боулы",
     name: "Боул с курицей",
     photo: "img/chicken.jpg",
-    allergens: ["Глютен", "Молоко", "Соя", "Орехи", "Горчица"],
     ingredients: [
       { name: "Булгур",                   g: 180, kcal: 247,   p: 9,    f: 9,    c: 32.4 },
       { name: "Куриное филе",             g: 60,  kcal: 99,    p: 18.6, f: 3,    c: 0 },
@@ -49,6 +53,52 @@ window.BOLEK_BOWLS = [
       { name: "Соевый соус",              g: 3,   kcal: 2,     p: 0.2,  f: 0,    c: 0.2 },
       { name: "Творожный мусс",           g: 30,  kcal: 87,    p: 1,    f: 8.7,  c: 0.9 },
       { name: "Ореховый соус",            g: 30,  kcal: 136.9, p: 0.9,  f: 12.3, c: 5.73, separate: true }
+    ]
+  }
+
+  ,{
+    slug: "sandwich-chicken",
+    name: "Сэндвич с курицей",
+    kind: "Сэндвич",
+    group: "Сэндвичи",
+    photo: "img/sandwich-chicken.jpg",
+    ingredients: [
+      { name: "Бриошь",                      g: 40, kcal: 147, p: 3,   f: 7.4, c: 14.8 },
+      { name: "Куриный рулет",               g: 40, kcal: 66,  p: 8.4, f: 3.2, c: 0.8 },
+      { name: "Томаты",                      g: 40, kcal: 7,   p: 0.4, f: 0.1, c: 1.6 },
+      { name: "Лист салата",                 g: 15, kcal: 2,   p: 0.2, f: 0,   c: 0.3 },
+      { name: "Фирменный соус",              g: 20, kcal: 39,  p: 1.9, f: 3.1, c: 2.1 },
+      { name: "Сливочный сыр (2 ломтика)",   g: 30, kcal: 75,  p: 4.5, f: 5.5, c: 1.5 }
+    ]
+  },
+  {
+    slug: "sandwich-beef",
+    name: "Сэндвич с говядиной",
+    kind: "Сэндвич",
+    group: "Сэндвичи",
+    photo: "img/sandwich-beef.jpg",
+    ingredients: [
+      { name: "Бриошь",                      g: 40, kcal: 147, p: 3,   f: 7.4,  c: 14.8 },
+      { name: "Говядина",                    g: 30, kcal: 75,  p: 8,   f: 4.5,  c: 0 },
+      { name: "Фирменный соус",              g: 20, kcal: 106, p: 0.3, f: 10.8, c: 2.1 },
+      { name: "Лист салата",                 g: 15, kcal: 2,   p: 0.2, f: 0,    c: 0.3 },
+      { name: "Сыр чеддер (2 ломтика)",      g: 30, kcal: 120, p: 7.5, f: 9.8,  c: 0.4 },
+      { name: "Огурцы",                      g: 30, kcal: 5,   p: 0.2, f: 0,    c: 1.1 }
+    ]
+  },
+  {
+    slug: "sandwich-mozzarella",
+    name: "Сэндвич с моцареллой",
+    kind: "Сэндвич",
+    group: "Сэндвичи",
+    photo: "img/sandwich-mozzarella.jpg",
+    ingredients: [
+      { name: "Бриошь",                      g: 40, kcal: 147, p: 3,   f: 7.4, c: 14.8 },
+      { name: "Творожный сыр",               g: 40, kcal: 100, p: 2.4, f: 9.6, c: 1.6 },
+      { name: "Песто",                       g: 20, kcal: 90,  p: 1.2, f: 8.8, c: 1.2 },
+      { name: "Лист салата",                 g: 15, kcal: 2,   p: 0.2, f: 0,   c: 0.3 },
+      { name: "Томаты черри",                g: 40, kcal: 7,   p: 0.4, f: 0.1, c: 1.6 },
+      { name: "Моцарелла",                   g: 40, kcal: 100, p: 7,   f: 7.5, c: 1 }
     ]
   }
 ];
