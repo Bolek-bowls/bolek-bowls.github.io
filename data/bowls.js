@@ -107,11 +107,13 @@ window.BOLEK_BOWLS = [
        optional: true, on: true/false  — добавка по желанию (лёд, сироп); yes / no — подписи кнопок
        variants: [{ name, short, kcal, p, f, c }] — выбор из нескольких вариантов (молоко)
        u: "мл" — единица измерения, если не граммы
+     liquid: true (у блюда) — напиток: вместо «порция, г» показывается «объём, мл»
      Значения напитков рассчитаны по справочным данным и ждут подтверждения по этикеткам и техкартам. */
   ,{
     slug: "drink-mojito",
     name: "Фитнес-твист BCAA Мохито",
     kind: "Напиток",
+    liquid: true,
     group: "Напитки",
     when: "Во время интенсивного кардио",
     photo: "img/drink-mojito.jpg",
@@ -119,13 +121,14 @@ window.BOLEK_BOWLS = [
       { name: "BCAA в порошке (1 порция)", g: 20,  kcal: 42, p: 10, f: 0, c: 0.5 },
       { name: "Кордиал",                   g: 20,  u: "мл", kcal: 54, p: 0, f: 0, c: 13.4 },
       { name: "Газированная вода",         g: 200, u: "мл", kcal: 0,  p: 0, f: 0, c: 0 },
-      { name: "Лёд", g: 45, kcal: 0, p: 0, f: 0, c: 0, optional: true, on: true, yes: "Со льдом", no: "Без льда" }
+      { name: "Лёд", g: 45, kcal: 0, p: 0, f: 0, c: 0 }
     ]
   },
   {
     slug: "drink-booster",
     name: "Бустер энергии",
     kind: "Напиток",
+    liquid: true,
     group: "Напитки",
     when: "Предтренировочный. Заряд бодрости без лишних углеводов",
     photo: "img/drink-booster.jpg",
@@ -140,6 +143,7 @@ window.BOLEK_BOWLS = [
     slug: "drink-shake",
     name: "Протеиновый шейк банановый",
     kind: "Напиток",
+    liquid: true,
     group: "Напитки",
     when: "До или после тренировки",
     photo: "img/drink-shake.jpg",
@@ -152,7 +156,7 @@ window.BOLEK_BOWLS = [
         { name: "Кокосовое",    short: "Кокосовое",   kcal: 39,  p: 0.2, f: 2,   c: 5 },
         { name: "Овсяное",      short: "Овсяное",     kcal: 89,  p: 2,   f: 3,   c: 13.4 }
       ] },
-      { name: "Лёд (3 кусочка)", g: 45, kcal: 0, p: 0, f: 0, c: 0, optional: true, on: true, yes: "Со льдом", no: "Без льда" },
+      { name: "Лёд (3 кусочка)", g: 45, kcal: 0, p: 0, f: 0, c: 0 },
       { name: "Сироп карамель (10 мл)", g: 10, u: "мл", kcal: 26, p: 0, f: 0, c: 6.5, optional: true, on: false, yes: "С сиропом", no: "Без сиропа" }
     ]
   },
@@ -160,6 +164,7 @@ window.BOLEK_BOWLS = [
     slug: "drink-isotonic",
     name: "Изотоник-лимонад",
     kind: "Напиток",
+    liquid: true,
     group: "Напитки",
     when: "Во время тренировки",
     photo: "img/drink-isotonic.jpg",
@@ -168,7 +173,7 @@ window.BOLEK_BOWLS = [
       { name: "Лимонный соус",              g: 15,  kcal: 5,  p: 0.1, f: 0, c: 1.1 },
       { name: "Газированная вода",          g: 200, u: "мл", kcal: 0,  p: 0,   f: 0, c: 0 },
       { name: "Розовая соль (¼ ч. л.)",     g: 1.5, kcal: 0,  p: 0,   f: 0, c: 0 },
-      { name: "Лёд", g: 45, kcal: 0, p: 0, f: 0, c: 0, optional: true, on: true, yes: "Со льдом", no: "Без льда" }
+      { name: "Лёд", g: 45, kcal: 0, p: 0, f: 0, c: 0 }
     ]
   }
 ];
