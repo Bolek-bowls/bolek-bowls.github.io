@@ -98,7 +98,7 @@
     return '<a class="card" href="' + esc(b.slug) + '.html">' +
       photoBlock(b, "thumb") +
       '<div class="row"><div class="txt"><h3>' + esc(b.name) + '</h3>' +
-      '<p class="meta">' + fmt(t.kcal, 0) + ' ккал · ' + fmt(t.g, 0) + ' г</p>' +
+      '<p class="meta">' + fmt(t.kcal, 0) + ' ккал · ' + fmt(t.g, 0) + (b.liquid ? ' мл' : ' г') + '</p>' +
       '<p class="meta">Б&nbsp;' + fmt(t.p, 1) + ' · Ж&nbsp;' + fmt(t.f, 1) + ' · У&nbsp;' + fmt(t.c, 1) + '</p></div>' +
       '<span class="go">' + ICON.right + '</span></div></a>';
   }
@@ -123,6 +123,7 @@
     var sep = b.ingredients.filter(function (i) { return i.separate; })[0];
     var st = initState(b);
     var t;
+    var U = b.liquid ? "мл" : "г";         // у напитков показываем объём в мл
 
     // Переключатели: отдельный соус, варианты (молоко), необязательные добавки (лёд, сироп)
     var ctls = [];
@@ -168,7 +169,7 @@
             '<div class="controls">' +
               '<div class="seg" id="seg-mode" role="group" aria-label="Показать значения">' +
                 '<button type="button" data-mode="portion" aria-pressed="true">На порцию</button>' +
-                '<button type="button" data-mode="100" aria-pressed="false">На 100 г</button>' +
+                '<button type="button" data-mode="100" aria-pressed="false">На 100 ' + U + '</button>' +
               '</div>' +
               ctlHtml +
             '</div>' +
@@ -213,12 +214,12 @@
       document.getElementById("legend").innerHTML =
         '<span><i class="s-p"></i>Белки ' + sh[0] + '%</span><span><i class="s-f"></i>Жиры ' + sh[1] + '%</span><span><i class="s-c"></i>Углеводы ' + sh[2] + '%</span>';
 
-      document.getElementById("portion").innerHTML = 'Порция <b>' + fmt(t.g, 0) + ' г</b>' +
+      document.getElementById("portion").innerHTML = (b.liquid ? 'Объём около <b>' : 'Порция <b>') + fmt(t.g, 0) + ' ' + U + '</b>' +
         (sep ? (st.sauce ? '. ' + esc(sep.name) + ' подаётся отдельно, он уже входит в значения ниже'
                          : '. Значения указаны без соуса') : '');
 
       document.getElementById("tbody").innerHTML = rowsHtml();
-      document.getElementById("total-row").innerHTML = '<td>Итого<span class="grams">' + fmt(t.g, 0) + ' г</span></td>' +
+      document.getElementById("total-row").innerHTML = '<td>Итого<span class="grams">' + fmt(t.g, 0) + ' ' + U + '</span></td>' +
         '<td>' + fmt(t.kcal, 0) + '</td><td>' + fmt(t.p, 1) + '</td><td>' + fmt(t.f, 1) + '</td><td>' + fmt(t.c, 1) + '</td>';
     }
     paint();
@@ -252,7 +253,7 @@
         else if (i.variants) picks.push(i.name + ": " + i.variants[st.v[k] || 0].name.toLowerCase());
         else if (i.optional) picks.push(i.name + ": " + (st.on[k] ? (i.yes || "да").toLowerCase() : (i.no || "нет").toLowerCase()));
       });
-      var text = b.name + " (" + (mode === "100" ? "на 100 г" : "порция " + fmt(t.g, 0) + " г") + ")\n" +
+      var text = b.name + " (" + (mode === "100" ? "на 100 " + U : (b.liquid ? "объём " : "порция ") + fmt(t.g, 0) + " " + U) + ")\n" +
         picks.map(function (x) { return x + "\n"; }).join("") +
         "Калории: " + fmt(v.kcal, 0) + " ккал\n" +
         "Белки: " + fmt(v.p, 1) + " г\n" +
