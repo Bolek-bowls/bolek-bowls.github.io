@@ -1,6 +1,6 @@
 /*
   Рисует страницы из данных в data/bowls.js.
-  Страница боула: <body data-page="bowl" data-bowl="shrimp">
+  Страница блюда: <body data-page="bowl" data-bowl="shrimp">  (так же для сэндвичей: data-bowl="sandwich-beef")
   Главная:        <body data-page="home">
 */
 (function () {
@@ -24,12 +24,25 @@
   function esc(s) { return String(s).replace(/[&<>"']/g, function (ch) {
     return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]; }); }
 
-  // withSauce === false: не считаем ингредиент с separate: true (ореховый соус)
-  function totals(b, withSauce) {
+  /* Состояние переключателей страницы: sauce (отдельный соус), on (необязательные ингредиенты), v (выбранный вариант) */
+  function initState(b) {
+    var st = { sauce: true, on: {}, v: {} };
+    b.ingredients.forEach(function (i, k) {
+      if (i.optional) st.on[k] = !!i.on;
+      if (i.variants) st.v[k] = 0;
+    });
+    return st;
+  }
+  function nutr(i, k, st) { return i.variants ? i.variants[st.v[k] || 0] : i; }   // значения с учётом выбранного варианта
+  function isOff(i, k, st) { return (i.separate && !st.sauce) || (i.optional && !st.on[k]); }
+
+  function totals(b, st) {
+    st = st || initState(b);
     var t = { g: 0, kcal: 0, p: 0, f: 0, c: 0 };
-    b.ingredients.forEach(function (i) {
-      if (i.separate && withSauce === false) return;
-      t.g += i.g; t.kcal += i.kcal; t.p += i.p; t.f += i.f; t.c += i.c;
+    b.ingredients.forEach(function (i, k) {
+      if (isOff(i, k, st)) return;
+      var n = nutr(i, k, st);
+      t.g += i.g; t.kcal += n.kcal; t.p += n.p; t.f += n.f; t.c += n.c;
     });
     Object.keys(t).forEach(function (k) { t[k] = round(t[k], 2); }); // убираем хвосты вида 18.250000000004
     return t;
@@ -92,28 +105,61 @@
 
   /* ---------- Главная ---------- */
   function renderHome() {
-    app.innerHTML =
-      '<div class="wrap home-body"><p class="eyebrow">Выберите боул</p>' +
-      '<div class="cards">' + BOWLS.map(cardHtml).join("") + '</div></div>';
+    var groups = [];
+    BOWLS.forEach(function (b) {
+      var name = b.group || "Меню";
+      var g = groups.filter(function (x) { return x.name === name; })[0];
+      if (!g) { g = { name: name, items: [] }; groups.push(g); }
+      g.items.push(b);
+    });
+    app.innerHTML = '<div class="wrap home-body">' + groups.map(function (g) {
+      return '<p class="eyebrow">' + esc(g.name) + '</p><div class="cards">' + g.items.map(cardHtml).join("") + '</div>';
+    }).join("") + '</div>';
     attachPhotos(app);
   }
 
-  /* ---------- Страница боула ---------- */
+  /* ---------- Страница блюда ---------- */
   function renderBowl(b) {
     var sep = b.ingredients.filter(function (i) { return i.separate; })[0];
-    var other = BOWLS.filter(function (x) { return x.slug !== b.slug; });
+    var st = initState(b);
+    var t;
 
-    var rows = b.ingredients.map(function (i) {
-      return '<tr' + (i.separate ? ' id="sep-row"' : '') + '><td>' + esc(i.name) + (i.separate ? '<span class="tag">отдельно</span>' : '') +
-        '<span class="grams">' + fmtRow(i.g) + ' г</span></td>' +
-        '<td>' + fmtRow(i.kcal) + '</td><td>' + fmtRow(i.p) + '</td><td>' + fmtRow(i.f) + '</td><td>' + fmtRow(i.c) + '</td></tr>';
+    // Переключатели: отдельный соус, варианты (молоко), необязательные добавки (лёд, сироп)
+    var ctls = [];
+    b.ingredients.forEach(function (i, k) {
+      if (i.separate) {
+        ctls.push({ kind: "sauce", k: k, label: i.name, opts: [["1", "С соусом"], ["0", "Без соуса"]], cur: st.sauce ? "1" : "0" });
+      } else if (i.variants) {
+        ctls.push({ kind: "var", k: k, label: i.name, opts: i.variants.map(function (v, n) { return [String(n), v.short || v.name]; }), cur: "0" });
+      } else if (i.optional) {
+        ctls.push({ kind: "opt", k: k, label: i.name, opts: [["1", i.yes || "Да"], ["0", i.no || "Нет"]], cur: st.on[k] ? "1" : "0" });
+      }
+    });
+    var ctlHtml = ctls.map(function (c) {
+      return '<div class="ctl"><span class="eyebrow">' + esc(c.label) + '</span>' +
+        '<div class="seg' + (c.opts.length > 2 ? ' many' : '') + '" data-kind="' + c.kind + '" data-k="' + c.k + '" role="group" aria-label="' + esc(c.label) + '">' +
+        c.opts.map(function (o) {
+          return '<button type="button" data-val="' + o[0] + '" aria-pressed="' + (o[0] === c.cur ? "true" : "false") + '">' + esc(o[1]) + '</button>';
+        }).join("") + '</div></div>';
     }).join("");
+
+    function rowsHtml() {
+      return b.ingredients.map(function (i, k) {
+        var n = nutr(i, k, st);
+        var name = i.variants ? i.name + ": " + n.name.toLowerCase() : i.name;
+        var tag = i.separate ? "отдельно" : (i.optional ? "по желанию" : "");
+        return '<tr' + (isOff(i, k, st) ? ' class="off"' : '') + '><td>' + esc(name) + (tag ? '<span class="tag">' + tag + '</span>' : '') +
+          '<span class="grams">' + fmtRow(i.g) + ' ' + (i.u || "г") + '</span></td>' +
+          '<td>' + fmtRow(n.kcal) + '</td><td>' + fmtRow(n.p) + '</td><td>' + fmtRow(n.f) + '</td><td>' + fmtRow(n.c) + '</td></tr>';
+      }).join("");
+    }
 
     app.innerHTML =
       '<div class="wrap">' +
         '<section class="intro">' +
-          '<p class="eyebrow"><span>Здоровое меню</span><span>Боул</span></p>' +
+          '<p class="eyebrow"><span>Здоровое меню</span><span>' + esc(b.kind || "Боул") + '</span></p>' +
           '<h1>' + esc(b.name) + '</h1>' +
+          (b.when ? '<p class="portion">' + esc(b.when) + '</p>' : '') +
           '<p class="portion" id="portion"></p>' +
         '</section>' +
 
@@ -124,12 +170,7 @@
                 '<button type="button" data-mode="portion" aria-pressed="true">На порцию</button>' +
                 '<button type="button" data-mode="100" aria-pressed="false">На 100 г</button>' +
               '</div>' +
-              (sep ?
-              '<div class="ctl"><span class="eyebrow">' + esc(sep.name) + '</span>' +
-                '<div class="seg" id="seg-sauce" role="group" aria-label="' + esc(sep.name) + '">' +
-                  '<button type="button" data-sauce="1" aria-pressed="true">С соусом</button>' +
-                  '<button type="button" data-sauce="0" aria-pressed="false">Без соуса</button>' +
-                '</div></div>' : '') +
+              ctlHtml +
             '</div>' +
             '<div class="facts" aria-live="polite">' +
               '<div class="fact fact--kcal"><span class="label">Калории</span><span class="value"><span data-v="kcal"></span><small>ккал</small></span></div>' +
@@ -149,17 +190,15 @@
         '<section class="section">' +
           '<div class="section-head"><h2>Состав</h2><span class="eyebrow">на одну порцию</span></div>' +
           '<table><thead><tr><th>Ингредиент</th><th>Ккал</th><th>Б</th><th>Ж</th><th>У</th></tr></thead>' +
-          '<tbody>' + rows + '</tbody>' +
+          '<tbody id="tbody"></tbody>' +
           '<tfoot><tr id="total-row"></tr></tfoot></table>' +
         '</section>' +
       '</div>';
 
     var mode = "portion";
-    var sauce = true;                      // ореховый соус включён по умолчанию (так считает кафе)
-    var t;
 
     function paint() {
-      t = totals(b, sauce);
+      t = totals(b, st);
       var v = view(t, mode);
       app.querySelector('[data-v="kcal"]').textContent = fmt(v.kcal, 0);
       app.querySelector('[data-v="p"]').textContent = fmt(v.p, 1);
@@ -175,35 +214,46 @@
         '<span><i class="s-p"></i>Белки ' + sh[0] + '%</span><span><i class="s-f"></i>Жиры ' + sh[1] + '%</span><span><i class="s-c"></i>Углеводы ' + sh[2] + '%</span>';
 
       document.getElementById("portion").innerHTML = 'Порция <b>' + fmt(t.g, 0) + ' г</b>' +
-        (sep ? (sauce ? '. ' + esc(sep.name) + ' подаётся отдельно, он уже входит в значения ниже'
-                      : '. Значения указаны без соуса') : '');
+        (sep ? (st.sauce ? '. ' + esc(sep.name) + ' подаётся отдельно, он уже входит в значения ниже'
+                         : '. Значения указаны без соуса') : '');
 
-      var sepRow = document.getElementById("sep-row");
-      if (sepRow) sepRow.classList.toggle("off", !sauce);
+      document.getElementById("tbody").innerHTML = rowsHtml();
       document.getElementById("total-row").innerHTML = '<td>Итого<span class="grams">' + fmt(t.g, 0) + ' г</span></td>' +
         '<td>' + fmt(t.kcal, 0) + '</td><td>' + fmt(t.p, 1) + '</td><td>' + fmt(t.f, 1) + '</td><td>' + fmt(t.c, 1) + '</td>';
     }
     paint();
 
-    function bindSeg(id, attr, onPick) {
-      var box = document.getElementById(id);
-      if (!box) return;
+    function pick(box, onPick) {
       box.querySelectorAll("button").forEach(function (btn) {
         btn.addEventListener("click", function () {
           box.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === btn ? "true" : "false"); });
-          onPick(btn.getAttribute(attr));
+          onPick(btn);
           paint();
         });
       });
     }
-    bindSeg("seg-mode", "data-mode", function (val) { mode = val; });
-    bindSeg("seg-sauce", "data-sauce", function (val) { sauce = val === "1"; });
+    pick(document.getElementById("seg-mode"), function (btn) { mode = btn.getAttribute("data-mode"); });
+    app.querySelectorAll(".seg[data-kind]").forEach(function (box) {
+      var kind = box.getAttribute("data-kind"), k = +box.getAttribute("data-k");
+      pick(box, function (btn) {
+        var val = btn.getAttribute("data-val");
+        if (kind === "sauce") st.sauce = val === "1";
+        else if (kind === "opt") st.on[k] = val === "1";
+        else st.v[k] = +val;
+      });
+    });
 
     /* копирование */
     document.getElementById("copy").addEventListener("click", function () {
       var v = view(t, mode);
+      var picks = [];
+      b.ingredients.forEach(function (i, k) {
+        if (i.separate) picks.push(i.name + ": " + (st.sauce ? "включён" : "без него"));
+        else if (i.variants) picks.push(i.name + ": " + i.variants[st.v[k] || 0].name.toLowerCase());
+        else if (i.optional) picks.push(i.name + ": " + (st.on[k] ? (i.yes || "да").toLowerCase() : (i.no || "нет").toLowerCase()));
+      });
       var text = b.name + " (" + (mode === "100" ? "на 100 г" : "порция " + fmt(t.g, 0) + " г") + ")\n" +
-        (sep ? sep.name + ": " + (sauce ? "включён" : "без него") + "\n" : "") +
+        picks.map(function (x) { return x + "\n"; }).join("") +
         "Калории: " + fmt(v.kcal, 0) + " ккал\n" +
         "Белки: " + fmt(v.p, 1) + " г\n" +
         "Жиры: " + fmt(v.f, 1) + " г\n" +
